@@ -6,7 +6,7 @@
 namespace {
 
 static const std::unordered_map<std::string, std::string> g_dest_map = {
-    {"", "000"},  {"M", "001"},  {"D", "010"},  {"DM", "011"},
+    {"", "000"},  {"M", "001"},  {"D", "010"},  {"DM", "011"}, {"MD", "011"},
     {"A", "100"}, {"AM", "101"}, {"AD", "110"}, {"ADM", "111"}};
 static const std::unordered_map<std::string, std::string> g_comp_map = {
     {"0", "0101010"},   {"1", "0111111"},   {"-1", "0111010"},

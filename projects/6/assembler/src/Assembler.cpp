@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <bitset>
 #include <cstddef>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -32,47 +33,78 @@ void assemble(const std::string &input_file, const std::string &output_file) {
     size_t current_line_number = 0;
     size_t a_symbol_index = 16;
     Parser parser(input_file);
+    std::ofstream output_stream(output_file);
+    if (!output_stream.is_open()) {
+        throw std::runtime_error("Cannot open the file: " + output_file);
+    }
+
+    std::cout << "[FIRST ROUND]: " << std::endl;
 
     while (parser.hasMoreLines()) {
-        parser.advance();
+        auto current_line = parser.advance();
 
-        std::cout << "instruction_type: "
-                  << static_cast<int>(parser.instructionType())
-                  << ", symbol: " << parser.symbol()
-                  << ", dest: " << parser.dest() << ", comp: " << parser.comp()
-                  << ", jump: " << parser.jump() << std::endl;
+        // std::cout << "instruction_type: "
+        //           << static_cast<int>(parser.instructionType())
+        //           << ", symbol: " << parser.symbol()
+        //           << ", dest: " << parser.dest() << ", comp: " <<
+        //           parser.comp()
+        //           << ", jump: " << parser.jump() << std::endl;
 
         if (parser.instructionType() == InstructionType::L_INSTRUCTION) {
             if (g_symbol_map.find(parser.symbol()) != g_symbol_map.end())
-                throw std::runtime_error("Too many symbol: " + parser.symbol());
-            g_symbol_map[parser.symbol()] = current_line_number + 1;
+                throw std::runtime_error("Too many label definition: " +
+                                         parser.symbol());
+
+            std::cout << current_line << ": " << current_line_number
+                      << std::endl;
+            g_symbol_map[parser.symbol()] = current_line_number;
         } else {
             current_line_number++;
         }
     }
+
     parser.reset();
+    std::cout << std::endl;
+    std::cout << "[SECOND ROUND]: " << std::endl;
 
     while (parser.hasMoreLines()) {
-        parser.advance();
+        auto current_line = parser.advance();
         if (parser.instructionType() == InstructionType::A_INSTRUCTION) {
             size_t num;
             if (is_numeric(parser.symbol())) {
+                std::cout << current_line << std::endl;
                 num = std::stoi(parser.symbol());
             } else {
                 if (g_symbol_map.find(parser.symbol()) != g_symbol_map.end()) {
+                    std::cout << current_line << ": [" << parser.symbol()
+                              << "] = " << g_symbol_map[parser.symbol()]
+                              << std::endl;
                     num = g_symbol_map[parser.symbol()];
                 } else {
                     g_symbol_map[parser.symbol()] = a_symbol_index;
                     num = a_symbol_index;
                     a_symbol_index++;
+
+                    std::cout << current_line << ": Add [" << parser.symbol()
+                              << "] = " << g_symbol_map[parser.symbol()]
+                              << std::endl;
                 }
             }
             std::cout << std::bitset<16>(num).to_string() << std::endl;
+            output_stream << std::bitset<16>(num).to_string() << "\n";
         } else if (parser.instructionType() == InstructionType::C_INSTRUCTION) {
+            std::cout << current_line << ": comp[" << parser.comp()
+                      << "], dest[" << parser.dest() << "], jump["
+                      << parser.jump() << "]" << std::endl;
+
             std::cout << "111" << comp(parser.comp()) << dest(parser.dest())
                       << jump(parser.jump()) << std::endl;
+
+            output_stream << "111" << comp(parser.comp()) << dest(parser.dest())
+                          << jump(parser.jump()) << "\n";
         }
     }
+    output_stream.close();
 }
 
 int main(int argc, char *argv[]) {

@@ -2,12 +2,7 @@
 #include <string>
 #include <vector>
 
-enum class InstructionType {
-    A_INSTRUCTION,
-    C_INSTRUCTION,
-    L_INSTRUCTION,
-    INVALID
-};
+enum class InstructionType { A_INSTRUCTION, C_INSTRUCTION, L_INSTRUCTION };
 
 class Parser {
   private:
@@ -21,7 +16,7 @@ class Parser {
 
   public:
     Parser(const std::string &input_file);
-    void advance();
+    std::string advance();
     void reset();
     bool hasMoreLines() const;
     InstructionType instructionType() const;

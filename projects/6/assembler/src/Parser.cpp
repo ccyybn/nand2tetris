@@ -21,12 +21,12 @@ static std::string trim(const std::string &str) {
 Parser::Parser(const std::string &input_file) {
     std::fstream file(input_file);
     if (!file.is_open()) {
-        std::cerr << "Cannot open the file." << std::endl;
+        throw std::runtime_error("Cannot open the file: " + input_file);
     }
     std::string line;
     while (std::getline(file, line)) {
         std::string trimed_line = trim(line);
-        std::cout << trimed_line << std::endl;
+        // std::cout << trimed_line << std::endl;
 
         if (!trimed_line.empty() && !trimed_line.starts_with("//")) {
             code_lines.push_back(trimed_line);
@@ -46,7 +46,7 @@ void Parser::reset() {
     jump_ = "";
 }
 
-void Parser::advance() {
+std::string Parser::advance() {
     if (hasMoreLines()) {
         current_line_index++;
     } else {
@@ -55,7 +55,7 @@ void Parser::advance() {
 
     auto current_line = code_lines[current_line_index];
 
-    std::cout << current_line << std::endl;
+    // std::cout << current_line << std::endl;
 
     if (current_line.starts_with('@')) {
         instruction_type_ = InstructionType::A_INSTRUCTION;
@@ -78,6 +78,8 @@ void Parser::advance() {
 
         if (index_of_equal != std::string::npos) {
             dest_ = current_line.substr(0, index_of_equal);
+        } else {
+            dest_ = "";
         }
 
         if (index_of_equal != std::string::npos) {
@@ -91,12 +93,16 @@ void Parser::advance() {
             jump_ = current_line.substr(index_of_semicolon + 1,
                                         current_line.size() -
                                             index_of_semicolon - 1);
+        } else {
+            jump_ = "";
         }
     } else {
         dest_ = "";
         comp_ = "";
         jump_ = "";
     }
+
+    return current_line;
 }
 
 InstructionType Parser::instructionType() const { return instruction_type_; }
