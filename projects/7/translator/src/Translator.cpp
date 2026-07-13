@@ -1,10 +1,8 @@
 #include "CodeWriter.hpp"
 #include "Parser.hpp"
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 
 void translate(const std::string &input_file, const std::string &output_file) {
 
@@ -15,7 +13,7 @@ void translate(const std::string &input_file, const std::string &output_file) {
         auto current_line = parser.advance();
         code_writer.write("// " + current_line);
         std::cout << current_line << std::endl;
-        std::cout << "command_type[" << static_cast<int>(parser.commandType())
+        std::cout << "command_type[" << to_string(parser.commandType())
                   << "], arg1[" << parser.arg1() << "], arg2[" << parser.arg2()
                   << "]" << std::endl;
 
@@ -27,6 +25,7 @@ void translate(const std::string &input_file, const std::string &output_file) {
         case CommandType::C_POP:
             code_writer.writePushPop(parser.commandType(), parser.arg1(),
                                      std::stoi(parser.arg2()));
+            break;
         default:
             throw std::invalid_argument("Invalid command: " + current_line);
         }

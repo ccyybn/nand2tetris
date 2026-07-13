@@ -14,6 +14,31 @@ enum class CommandType {
     C_CALL
 };
 
+constexpr std::string_view to_string(CommandType c) {
+    switch (c) {
+    case CommandType::C_POP:
+        return "C_POP";
+    case CommandType::C_PUSH:
+        return "C_PUSH";
+    case CommandType::C_ARITHMETIC:
+        return "C_ARITHMETIC";
+    case CommandType::C_CALL:
+        return "C_CALL";
+    case CommandType::C_FUNCTION:
+        return "C_FUNCTION";
+    case CommandType::C_GOTO:
+        return "C_GOTO";
+    case CommandType::C_IF:
+        return "C_IF";
+    case CommandType::C_LABEL:
+        return "C_LABEL";
+    case CommandType::C_RETURN:
+        return "C_RETURN";
+    default:
+        return "Unknown";
+    }
+}
+
 class Parser {
   private:
     std::vector<std::string> code_lines;
