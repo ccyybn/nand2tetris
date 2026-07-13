@@ -72,6 +72,9 @@ std::string Parser::advance() {
         arg2_ = tokens[2];
     } else if (current_line.starts_with("pop")) {
         command_type_ = CommandType::C_POP;
+        auto tokens = split(current_line, " \t");
+        arg1_ = tokens[1];
+        arg2_ = tokens[2];
     } else if (current_line == "add" || current_line == "sub" ||
                current_line == "neg" || current_line == "eq" ||
                current_line == "gt" || current_line == "lt" ||

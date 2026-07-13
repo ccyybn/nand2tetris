@@ -26,7 +26,7 @@ std::unordered_map<std::string, std::string> compare_ops = {
     {"lt", "D;JLT"},
 };
 
-std::unordered_map<std::string, std::string> segment_pointers = {
+std::unordered_map<std::string, std::string> relative_segment_pointers = {
     {"local", "LCL"},
     {"argument", "ARG"},
     {"this", "THIS"},
@@ -35,8 +35,10 @@ std::unordered_map<std::string, std::string> segment_pointers = {
 
 } // namespace
 
-CodeWriter::CodeWriter(const std::string &output_file) {
+CodeWriter::CodeWriter(const std::string &output_file,
+                       const std::string file_name_without_ext) {
     ofstream_ = std::ofstream(output_file);
+    file_name_without_ext_ = file_name_without_ext;
     if (!ofstream_.is_open()) {
         throw std::runtime_error("Cannot open the file: " + output_file);
     }
@@ -77,23 +79,24 @@ void CodeWriter::compareOP(const std::string &command) {
     write("A=M");
     // Perform M-D and put the result back into D
     write("D=M-D");
-    // Jump to the TRUE label if D satisfies the comparison operation
-    write("@TRUE");
+    // Jump to the COMPARE_TRUE_x label if D satisfies the comparison operation
+    write(std::format("@COMPARE_TRUE_{}", compare_counter));
     write(compare_ops[command]);
     // Set the value of the address pointed to by @SP to false
     write("@SP");
     write("A=M");
     write("M=0");
-    // Jump to the FALSE label to skip the TRUE process
-    write("@FALSE");
+    // Jump to the COMPARE_FALSE_x label to skip the TRUE process
+    write(std::format("@COMPARE_FALSE_{}", compare_counter));
     write("0;JMP");
     // Set the value of the address pointed to by @SP to true
-    write("(TRUE)");
+    write(std::format("(COMPARE_TRUE_{})", compare_counter));
     write("@SP");
     write("A=M");
     write("M=-1");
-    write("(FALSE)");
+    write(std::format("(COMPARE_FALSE_{})", compare_counter));
     increaseSP();
+    compare_counter++;
 }
 
 void CodeWriter::writeArithmetic(const std::string &command) {
@@ -108,33 +111,51 @@ void CodeWriter::writeArithmetic(const std::string &command) {
     }
 }
 
-void CodeWriter::accessSegment(const std::string &segment, int16_t index) {
-    if (segment_pointers.contains(segment)) {
-        // Store the segment index in D
-        write(std::format("@{}", index));
-        write("D=A");
-        // Get the segment base address
-        write("@" + segment_pointers[segment]);
-        // Add the base address(M) and the segment index(D)
-        write("A=D+M");
-    } else if (segment == "pointer") {
+void CodeWriter::accessAbsoluteSegment(const std::string &segment,
+                                       int16_t index) {
+    if (segment == "pointer") {
         // Access the value of THIS or THAT
         index == 0 ? write("@THIS") : write("@THAT");
-    } else if (segment == "constant") {
-        // Store the constant vaule in A
-        write(std::format("@{}", index));
+    } else if (segment == "temp") {
+        // Access the value of TEMP[0-7] at R[5-12]
+        write(std::format("@R{}", (index + 5)));
+    } else if (segment == "static") {
+        // Access the value of STATIC[0-239] at RAM[16-255]
+        write(std::format("@{}.{}", file_name_without_ext_, index));
     } else {
         throw std::invalid_argument("Invalid segment: " + segment);
     }
+}
+
+void CodeWriter::accessRelativeSegment(const std::string &segment,
+                                       int16_t index,
+                                       const std::string &store_at) {
+    // Store the segment index in D
+    write(std::format("@{}", index));
+    write("D=A");
+    // Get the segment base address
+    write("@" + relative_segment_pointers[segment]);
+    write(std::format("{}=D+M", store_at));
 }
 
 void CodeWriter::writePushPop(CommandType command, const std::string &segment,
                               int16_t index) {
     switch (command) {
     case CommandType::C_PUSH:
-        accessSegment(segment, index);
-        // Store the segment value in D
-        segment == "constant" ? write("D=A") : write("D=M");
+        if (segment == "constant") {
+            // Store the constant vaule in A
+            write(std::format("@{}", index));
+            write("D=A");
+        } else if (relative_segment_pointers.contains(segment)) {
+            // Access the segment address (Store the address in A)
+            accessRelativeSegment(segment, index, "A");
+            // Store the segment value in D
+            write("D=M");
+        } else {
+            accessAbsoluteSegment(segment, index);
+            // Store the segment value in D
+            write("D=M");
+        }
         // Push the value in D to the address pointed to by @SP
         write("@SP");
         write("A=M");
@@ -143,30 +164,47 @@ void CodeWriter::writePushPop(CommandType command, const std::string &segment,
         break;
     case CommandType::C_POP:
         if (segment == "constant") {
-            std::invalid_argument(
+            throw std::invalid_argument(
                 "Segment <constant> is invalid in the pop operation.");
         }
-        accessSegment(segment, index);
-        // Backup the segment address to R13
-        write("D=A");
-        write("@R13");
-        write("M=D");
+        if (relative_segment_pointers.contains(segment)) {
+            // Access the segment address (Store the address in D)
+            accessRelativeSegment(segment, index, "D");
+            // Backup the segment address in D to R13
+            write("@R13");
+            write("M=D");
 
-        // Access the value at the top of the stack and put it into D
-        write("@SP");
-        write("M=M-1");
-        write("A=M");
-        write("D=M");
+            // Access the value at the top of the stack and put it into D
+            write("@SP");
+            write("M=M-1");
+            write("A=M");
+            write("D=M");
 
-        // Restore the segment address in R13 to A
-        // Set the value pointed to by that address to D
-        write("@R13");
-        write("A=M");
-        write("M=D");
+            // Restore the segment address in R13 to A
+            // Set the value pointed to by that address to D
+            write("@R13");
+            write("A=M");
+            write("M=D");
+        } else {
+            // Access the value at the top of the stack and put it into D
+            write("@SP");
+            write("M=M-1");
+            write("A=M");
+            write("D=M");
+            // Access the segment address (Store the address in A)
+            accessAbsoluteSegment(segment, index);
+            write("M=D");
+        }
+        break;
     default:
         throw std::invalid_argument(
             std::format("Invalid push pop operation: {}", to_string(command)));
     }
 }
 
-void CodeWriter::close() { ofstream_.close(); }
+void CodeWriter::close() {
+    write("(END)");
+    write("@END");
+    write("0;JMP");
+    ofstream_.close();
+}

@@ -4,10 +4,12 @@
 #include <stdexcept>
 #include <string>
 
-void translate(const std::string &input_file, const std::string &output_file) {
+void translate(const std::string &input_file, const std::string &output_file,
+               const std::string &file_name_without_ext) {
 
     Parser parser(input_file);
-    CodeWriter code_writer(output_file);
+
+    CodeWriter code_writer(output_file, file_name_without_ext);
 
     while (parser.hasMoreLines()) {
         auto current_line = parser.advance();
@@ -41,16 +43,29 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     std::string input_file = argv[1];
+    std::string file_path_without_ext;
+    std::string file_name_without_ext;
     std::string output_file;
+
+    size_t dot_pos = input_file.find_last_of('.');
+    if (dot_pos != std::string::npos) {
+        file_path_without_ext = input_file.substr(0, dot_pos);
+    } else {
+        file_path_without_ext = input_file;
+    }
+
+    size_t slash_pos = file_path_without_ext.find_last_of('/');
+    if (slash_pos != std::string::npos) {
+        file_name_without_ext = file_path_without_ext.substr(slash_pos + 1);
+    } else {
+        file_name_without_ext = file_path_without_ext;
+    }
+
     if (argc >= 3) {
         output_file = argv[2];
     } else {
-        size_t dot_pos = input_file.find_last_of('.');
-        if (dot_pos != std::string::npos) {
-            output_file = input_file.substr(0, dot_pos) + ".asm";
-        } else {
-            output_file = input_file + ".asm";
-        }
+        output_file = file_path_without_ext + ".asm";
     }
-    translate(input_file, output_file);
+
+    translate(input_file, output_file, file_name_without_ext);
 }
