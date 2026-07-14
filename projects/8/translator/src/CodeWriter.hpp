@@ -21,8 +21,9 @@ class CodeWriter {
     };
 
   public:
-    CodeWriter(const std::string &output_file, const std::string &file_name);
+    CodeWriter(const std::string &output_file);
     inline void write(const std::string &str) { ofstream_ << str << "\n"; };
+    void setFileName(const std::string &file_name);
     void writeArithmetic(const std::string &command);
     void writePushPop(CommandType command, const std::string &segment,
                       int16_t index);

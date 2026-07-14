@@ -1,6 +1,8 @@
 #include "CodeWriter.hpp"
 #include "Parser.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -35,13 +37,16 @@ std::unordered_map<std::string, std::string> relative_segment_pointers = {
 
 } // namespace
 
-CodeWriter::CodeWriter(const std::string &output_file,
-                       const std::string &file_name) {
+CodeWriter::CodeWriter(const std::string &output_file) {
     ofstream_ = std::ofstream(output_file);
-    file_name_ = file_name;
     if (!ofstream_.is_open()) {
         throw std::runtime_error("Cannot open the file: " + output_file);
     }
+}
+
+void CodeWriter::setFileName(const std::string &file_name) {
+    std::filesystem::path file_path = (file_name);
+    file_name_ = file_path.stem();
 }
 
 void CodeWriter::unaryOP(const std::string &command) {
