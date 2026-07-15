@@ -1,6 +1,5 @@
 #include "CodeWriter.hpp"
 #include "Parser.hpp"
-#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -42,6 +41,16 @@ void translate(const std::vector<std::string> &input_files,
             case CommandType::C_IF:
                 code_writer.writeIf(parser.arg1());
                 break;
+            case CommandType::C_FUNCTION:
+                code_writer.writeFunction(parser.arg1(),
+                                          std::stoi(parser.arg2()));
+                break;
+            case CommandType::C_CALL:
+                code_writer.writeCall(parser.arg1(), std::stoi(parser.arg2()));
+                break;
+            case CommandType::C_RETURN:
+                code_writer.writeReturn();
+                break;
             default:
                 throw std::invalid_argument("<Translator> Invalid command: " +
                                             current_line);
@@ -63,8 +72,6 @@ int main(int argc, char *argv[]) {
 
     std::vector<std::string> input_files;
     std::filesystem::path input_path(input_argument);
-    input_path =
-        input_path.filename().empty() ? input_path.parent_path() : input_path;
 
     if (!std::filesystem::exists(input_path)) {
         std::cerr << "Path does not exist" << std::endl;
@@ -74,6 +81,8 @@ int main(int argc, char *argv[]) {
     if (std::filesystem::is_regular_file(input_path)) {
         input_files.push_back(input_argument);
     } else if (std::filesystem::is_directory(input_path)) {
+        input_path = input_path.filename().empty() ? input_path.parent_path()
+                                                   : input_path;
         for (const auto &entry :
              std::filesystem::directory_iterator(input_path)) {
             if (entry.is_regular_file() && entry.path().extension() == ".vm") {

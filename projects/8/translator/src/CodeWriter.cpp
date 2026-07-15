@@ -1,14 +1,15 @@
 #include "CodeWriter.hpp"
 #include "Parser.hpp"
-#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace {
 
@@ -38,7 +39,7 @@ std::unordered_map<std::string, std::string> relative_segment_pointers = {
 } // namespace
 
 CodeWriter::CodeWriter(const std::string &output_file) {
-    ofstream_ = std::ofstream(output_file);
+    ofstream_ = std::ofstream(output_file, std::ios::trunc);
     if (!ofstream_.is_open()) {
         throw std::runtime_error("Cannot open the file: " + output_file);
     }
@@ -54,7 +55,7 @@ void CodeWriter::unaryOP(const std::string &command) {
     write("M=M-1");
     write("A=M");
     write(unary_ops[command]);
-    increaseSP();
+    incrSP();
 }
 
 void CodeWriter::binaryOP(const std::string &command) {
@@ -69,7 +70,7 @@ void CodeWriter::binaryOP(const std::string &command) {
     write("A=M");
     // Perform a binary operation on M and D, and put the result back into M
     write(binary_ops[command]);
-    increaseSP();
+    incrSP();
 }
 
 void CodeWriter::compareOP(const std::string &command) {
@@ -100,7 +101,7 @@ void CodeWriter::compareOP(const std::string &command) {
     write("A=M");
     write("M=-1");
     write(std::format("(COMPARE_FALSE_{})", compare_counter));
-    increaseSP();
+    incrSP();
     compare_counter++;
 }
 
@@ -165,7 +166,7 @@ void CodeWriter::writePushPop(CommandType command, const std::string &segment,
         write("@SP");
         write("A=M");
         write("M=D");
-        increaseSP();
+        incrSP();
         break;
     case CommandType::C_POP:
         if (segment == "constant") {
@@ -208,11 +209,11 @@ void CodeWriter::writePushPop(CommandType command, const std::string &segment,
 }
 
 void CodeWriter::writeLabel(const std::string &label) {
-    write(std::format("({}.{}${})", file_name_, function_name_, label));
+    write(std::format("({}${})", function_name_, label));
 }
 
 void CodeWriter::writeGoto(const std::string &label) {
-    write(std::format("@{}.{}${}", file_name_, function_name_, label));
+    write(std::format("@{}${}", function_name_, label));
     write("0;JMP");
 }
 
@@ -221,13 +222,147 @@ void CodeWriter::writeIf(const std::string &label) {
     write("M=M-1");
     write("A=M");
     write("D=M");
-    write(std::format("@{}.{}${}", file_name_, function_name_, label));
+    write(std::format("@{}${}", function_name_, label));
     write("D;JNE");
+}
+
+void CodeWriter::writeFunction(const std::string &function_name,
+                               int16_t nargs) {
+    function_name_ = function_name;
+    if (function_name == "Sys.init") {
+        has_sys_init_ = true;
+    }
+    write(std::format("({})", function_name));
+    for (int i = 0; i < nargs; i++) {
+        write("@SP");
+        write("A=M");
+        write("M=0");
+        incrSP();
+    }
+}
+
+inline void CodeWriter::pushFrame(const std::string &name,
+                                  const std::string &value_at) {
+    write("@" + name);
+    write("D=" + value_at);
+    write("@SP");
+    write("A=M");
+    write("M=D");
+    incrSP();
+}
+
+void CodeWriter::writeCall(const std::string &function_name, int16_t nargs) {
+    int16_t call_index = 0;
+    if (call_counter_.contains(function_name_)) {
+        call_index = call_counter_[function_name_];
+    }
+    std::string return_addr_label =
+        std::format("{}$ret.{}", function_name_, call_index);
+
+    write("// push returnAddress");
+    pushFrame(return_addr_label, "A");
+    write("// push LCL");
+    pushFrame("LCL");
+    write("// push ARG");
+    pushFrame("ARG");
+    write("// push THIS");
+    pushFrame("THIS");
+    write("// push THAT");
+    pushFrame("THAT");
+
+    // ARG = SP - 5 - nargs
+    write("// ARG = SP - 5 - nargs");
+    write(std::format("@{}", (nargs + 5)));
+    write("D=A");
+    write("@SP");
+    write("D=M-D");
+    write("@ARG");
+    write("M=D");
+
+    // LCL = SP
+    write("// LCL = SP");
+    write("@SP");
+    write("D=M");
+    write("@LCL");
+    write("M=D");
+
+    write(std::format("@{}", function_name));
+    write("0;JMP");
+    write(std::format("({})", return_addr_label));
+
+    call_index++;
+    call_counter_[function_name_] = call_index;
+}
+
+inline void CodeWriter::restoreFrame(const std::string &name, int16_t offset) {
+    if (offset == 1) {
+        write("@LCL");
+        write("A=M-1");
+    } else {
+        write(std::format("@{}", offset));
+        write("D=A");
+        write("@LCL");
+        write("A=M-D");
+    }
+
+    write("D=M");
+    write("@" + name);
+    write("M=D");
+}
+
+void CodeWriter::writeReturn() {
+    write("// Retrieve retAddr and put it into R13 before setting the return "
+          "value; otherwise, the return value will overwrite it when nargs==0");
+    restoreFrame("R13", 5);
+
+    write("// Get the return value at the top of the stack and put it at *ARG");
+    write("@SP");
+    write("A=M-1");
+    write("D=M");
+    write("@ARG");
+    write("A=M");
+    write("M=D");
+
+    write("// Restore SP, SP = ARG + 1");
+    write("@ARG");
+    write("D=M");
+    write("@SP");
+    write("M=D+1");
+
+    write("// Restore THAT");
+    restoreFrame("THAT", 1);
+    write("// Restore THIS");
+    restoreFrame("THIS", 2);
+    write("// Restore ARG");
+    restoreFrame("ARG", 3);
+    write("// Restore LCL");
+    restoreFrame("LCL", 4);
+
+    write("// goto retAddr");
+    write("@R13");
+    write("A=M");
+    write("0;JMP");
 }
 
 void CodeWriter::close() {
     write("(END)");
     write("@END");
     write("0;JMP");
+
+    if (has_sys_init_) {
+        std::stringstream main_code_buffer = std::move(buffer_);
+        buffer_ = std::stringstream();
+        function_name_ = "bootstrap";
+        write("@256");
+        write("D=A");
+        write("@SP");
+        write("M=D");
+        writeCall("Sys.init", 0);
+        write("@END");
+        write("0;JMP");
+        ofstream_ << buffer_.rdbuf() << main_code_buffer.rdbuf();
+    } else {
+        ofstream_ << buffer_.rdbuf();
+    }
     ofstream_.close();
 }

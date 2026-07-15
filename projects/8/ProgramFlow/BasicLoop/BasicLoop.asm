@@ -6,7 +6,7 @@ A=M
 M=D
 @SP
 M=M+1
-// pop local 0         
+// pop local 0
 @0
 D=A
 @LCL
@@ -21,7 +21,7 @@ D=M
 A=M
 M=D
 // label LOOP
-(BasicLoop.main$LOOP)
+(null$LOOP)
 // push argument 0
 @0
 D=A
@@ -55,7 +55,7 @@ A=M
 M=D+M
 @SP
 M=M+1
-// pop local 0	        
+// pop local 0
 @0
 D=A
 @LCL
@@ -99,7 +99,7 @@ A=M
 M=M-D
 @SP
 M=M+1
-// pop argument 0      
+// pop argument 0
 @0
 D=A
 @ARG
@@ -124,14 +124,14 @@ A=M
 M=D
 @SP
 M=M+1
-// if-goto LOOP        
+// if-goto LOOP
 @SP
 M=M-1
 A=M
 D=M
-@BasicLoop.main$LOOP
+@null$LOOP
 D;JNE
-// push local 0        
+// push local 0
 @0
 D=A
 @LCL
