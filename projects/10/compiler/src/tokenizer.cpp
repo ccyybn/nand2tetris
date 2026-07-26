@@ -4,6 +4,7 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -144,19 +145,21 @@ void Tokenizer::parseTokens() {
         std::vector<std::string_view> segments = toSegments(line);
         for (const std::string_view& segment : segments) {
             if (all_keywords.contains(segment)) {
-                tokens_.push_back({.type = TokenType::KEYWORD, .keyword = all_keywords.at(segment)});
+                tokens_.push_back({.type = TokenType::KEYWORD, .keyword = all_keywords.at(segment), .lexeme = std::string(segment)});
             } else if (segment.length() == 1 && all_symbols.contains(segment.at(0))) {
-                tokens_.push_back({.type = TokenType::SYMBOL, .symbol = segment.at(0)});
+                tokens_.push_back({.type = TokenType::SYMBOL, .symbol = segment.at(0), .lexeme = std::string(segment)});
             } else if (segment.starts_with("\"") && segment.ends_with("\"")) {
-                tokens_.push_back({.type = TokenType::STRING_CONST, .string_val = std::string(segment.substr(1, segment.length() - 2))});
+                tokens_.push_back({.type = TokenType::STRING_CONST,
+                                   .string_val = std::string(segment.substr(1, segment.length() - 2)),
+                                   .lexeme = std::string(segment)});
             } else if (isDigital(segment)) {
                 const int intVal = std::stoi(std::string(segment));
                 if (intVal < 0 || intVal > 32767) {
                     throw std::runtime_error("Integer values must be between 0 and 32767.");
                 }
-                tokens_.push_back({.type = TokenType::INIT_CONST, .int_val = static_cast<int16_t>(intVal)});
+                tokens_.push_back({.type = TokenType::INIT_CONST, .int_val = static_cast<int16_t>(intVal), .lexeme = std::string(segment)});
             } else if (isIdentifier(segment)) {
-                tokens_.push_back({.type = TokenType::IDENTIFIER, .identifier = std::string(segment)});
+                tokens_.push_back({.type = TokenType::IDENTIFIER, .identifier = std::string(segment), .lexeme = std::string(segment)});
             } else {
                 throw std::runtime_error(std::format("Unknown segment: {}", segment));
             }
@@ -174,21 +177,38 @@ void Tokenizer::advance() {
     }
 }
 
-inline const Token& Tokenizer::getCurrentToken() const {
-    if (current_token_index_ == -1) {
-        throw std::runtime_error("Token index is -1");
+TokenType Tokenizer::tokenType() const { return peek().type; }
+
+Keyword Tokenizer::keyword() const { return peek().keyword; }
+
+char Tokenizer::symbol() const { return peek().symbol; }
+
+const std::string& Tokenizer::identifier() const { return peek().identifier; }
+
+int16_t Tokenizer::intVal() const { return peek().int_val; }
+
+const std::string& Tokenizer::stringVal() const { return peek().string_val; }
+
+void Tokenizer::printXML(std::ostream& out, const Token& token) const {
+    switch (token.type) {
+        case TokenType::KEYWORD:
+            out << std::format("<keyword> {} </keyword>\n", to_string(token.keyword));
+            break;
+        case TokenType::SYMBOL:
+            out << std::format("<symbol> {} </symbol>\n", escape_xml(std::string(1, token.symbol)));
+            break;
+        case TokenType::IDENTIFIER:
+            out << std::format("<identifier> {} </identifier>\n", token.identifier);
+            break;
+        case TokenType::STRING_CONST:
+            out << std::format("<stringConstant> {} </stringConstant>\n", escape_xml(token.string_val));
+            break;
+        case TokenType::INIT_CONST:
+            out << std::format("<integerConstant> {} </integerConstant>\n", token.int_val);
+            break;
+        default:
+            throw std::runtime_error(std::format("Unknown token type: {}", to_string(token.type)));
     }
-    return tokens_[current_token_index_];
 }
 
-TokenType Tokenizer::tokenType() const { return getCurrentToken().type; }
-
-Keyword Tokenizer::keyword() const { return getCurrentToken().keyword; }
-
-char Tokenizer::symbol() const { return getCurrentToken().symbol; }
-
-const std::string& Tokenizer::identifier() const { return getCurrentToken().identifier; }
-
-int16_t Tokenizer::intVal() const { return getCurrentToken().int_val; }
-
-const std::string& Tokenizer::stringVal() const { return getCurrentToken().string_val; }
+void Tokenizer::printXML(std::ostream& out) const { printXML(out, peek()); }

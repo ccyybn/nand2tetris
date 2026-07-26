@@ -6,11 +6,12 @@
 #include <string>
 #include <vector>
 
+#include "compilation_engine.hpp"
 #include "tokenizer.hpp"
 
 void toTokensFile(const std::string& input_file) {
     std::filesystem::path input_path(input_file);
-    std::string output_path = input_path.replace_extension("").generic_string() + "TT.xml";
+    std::string output_path = input_path.replace_extension("").generic_string() + "T_.xml";
 
     std::cout << output_path << std::endl;
     std::ofstream output_file(output_path);
@@ -21,33 +22,28 @@ void toTokensFile(const std::string& input_file) {
     output_file << "<tokens>\n";
     while (tokenizer.hasMoreTokens()) {
         tokenizer.advance();
-        switch (tokenizer.tokenType()) {
-            case TokenType::KEYWORD:
-                output_file << std::format("<keyword> {} </keyword>\n", to_string(tokenizer.keyword()));
-                break;
-            case TokenType::SYMBOL:
-                output_file << std::format("<symbol> {} </symbol>\n", escape_xml(std::string(1, tokenizer.symbol())));
-                break;
-            case TokenType::IDENTIFIER:
-                output_file << std::format("<identifier> {} </identifier>\n", tokenizer.identifier());
-                break;
-            case TokenType::STRING_CONST:
-                output_file << std::format("<stringConstant> {} </stringConstant>\n", escape_xml(tokenizer.stringVal()));
-                break;
-            case TokenType::INIT_CONST:
-                output_file << std::format("<integerConstant> {} </integerConstant>\n", tokenizer.intVal());
-                break;
-            default:
-                throw std::runtime_error(std::format("Unknown token type: {}", to_string(tokenizer.tokenType())));
-        }
+        tokenizer.printXML(output_file);
     }
     output_file << "</tokens>\n";
     output_file.close();
 }
 
+void toStructureFile(const std::string& input_file) {
+    std::filesystem::path input_path(input_file);
+    std::string output_path = input_path.replace_extension("").generic_string() + "_.xml";
+    std::cout << output_path << std::endl;
+
+    Tokenizer tokenizer(input_file);
+    CompilationEngine engine(tokenizer, output_path);
+
+    engine.compileClass();
+    engine.close();
+}
+
 void compile(const std::vector<std::string>& input_files) {
     for (const std::string& input_file : input_files) {
-        toTokensFile(input_file);
+        // toTokensFile(input_file);
+        toStructureFile(input_file);
     }
 }
 

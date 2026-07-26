@@ -1,6 +1,10 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
+#include <format>
 #include <fstream>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -29,7 +33,8 @@ enum class Keyword {
     K_TRUE,
     K_FALSE,
     K_NULL,
-    K_THIS
+    K_THIS,
+    K_UNDEFINED
 };
 
 constexpr std::string_view to_string(TokenType type) {
@@ -93,6 +98,8 @@ constexpr std::string_view to_string(Keyword k) {
             return "null";
         case Keyword::K_THIS:
             return "this";
+        case Keyword::K_UNDEFINED:
+            return "undefined";
         default:
             return "unknown";
     }
@@ -129,11 +136,44 @@ constexpr std::string escape_xml(const std::string_view& str) {
 
 struct Token {
     TokenType type;
-    Keyword keyword;
+    Keyword keyword = Keyword::K_UNDEFINED;
     char symbol;
     std::string identifier;
     int16_t int_val;
     std::string string_val;
+    std::string lexeme;
+
+    friend bool operator==(const Token& lhs, const Token& rhs) {
+        return lhs.type == rhs.type && lhs.keyword == rhs.keyword && lhs.symbol == rhs.symbol && lhs.identifier == rhs.identifier &&
+               lhs.int_val == rhs.int_val && lhs.string_val == rhs.string_val;
+    }
+
+    bool match(const Token& other) const {
+        if (type != other.type) return false;
+        if (type == TokenType::IDENTIFIER) return true;
+        if (type == TokenType::KEYWORD) return keyword == other.keyword;
+        if (type == TokenType::INIT_CONST) return int_val == other.int_val;
+        if (type == TokenType::STRING_CONST) return string_val == other.string_val;
+        if (type == TokenType::SYMBOL) return symbol == other.symbol;
+        return false;
+    }
+
+    std::string toString() const {
+        switch (type) {
+            case TokenType::IDENTIFIER:
+                return identifier;
+            case TokenType::KEYWORD:
+                return std::string(to_string(keyword));
+            case TokenType::INIT_CONST:
+                return std::format("{}", int_val);
+            case TokenType::STRING_CONST:
+                return string_val;
+            case TokenType::SYMBOL:
+                return std::string(1, symbol);
+            default:
+                throw std::runtime_error(std::format("unknown token type: {}", to_string(type)));
+        }
+    }
 };
 
 class Tokenizer {
@@ -141,7 +181,6 @@ class Tokenizer {
     std::vector<Token> tokens_;
     std::vector<std::string> code_lines_;
     size_t current_token_index_ = -1;
-    inline const Token& getCurrentToken() const;
     void parseLines(std::fstream& file);
     void parseTokens();
 
@@ -170,13 +209,31 @@ class Tokenizer {
 
     inline static const std::unordered_set<char> all_symbols = {'{', '}', '(', ')', '[', ']', '.', ',', ';', '+',
                                                                 '-', '*', '/', '&', '|', '<', '>', '=', '~'};
+
+    inline static const std::unordered_set<char> all_ops = {'+', '-', '*', '/', '&', '|', '<', '>', '='};
+
+    inline static const std::unordered_set<Keyword> all_constant_keywords = {Keyword::K_TRUE, Keyword::K_FALSE, Keyword::K_NULL, Keyword::K_THIS};
+
+    inline static const std::unordered_set<Keyword> all_statement_keywords = {Keyword::K_LET, Keyword::K_IF, Keyword::K_WHILE, Keyword::K_DO,
+                                                                              Keyword::K_RETURN};
+
     Tokenizer(const std::string& input_file);
     void advance();
     bool hasMoreTokens() const;
+    inline const Token& peek(size_t offset = 0) const {
+        size_t index = current_token_index_ + offset;
+        if (index == -1 || index >= tokens_.size()) {
+            throw std::runtime_error(std::format("Token index {} is out of range 0-{}", index, tokens_.size()));
+        }
+        return tokens_[index];
+    };
+    inline size_t get_current_index() { return current_token_index_; }
     TokenType tokenType() const;
     Keyword keyword() const;
     char symbol() const;
     const std::string& identifier() const;
     int16_t intVal() const;
     const std::string& stringVal() const;
+    void printXML(std::ostream& out) const;
+    void printXML(std::ostream& out, const Token& token) const;
 };
