@@ -101,7 +101,7 @@ class Math {
         let i = 7;
         while (~(i < 0)) {
             let root = y + powersOfTwo[i];
-            let square = Math.multiply(root, root);
+            let square = root * root;
             if ((square > 0) & ~(square > x)) {
                 let y = root;
             }

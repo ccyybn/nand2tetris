@@ -101,7 +101,7 @@ class Math {
         let i = 7;
         while (~(i < 0)) {
             let root = y + powersOfTwo[i];
-            let square = Math.multiply(root, root);
+            let square = root * root;
             if ((square > 0) & ~(square > x)) {
                 let y = root;
             }
@@ -130,10 +130,10 @@ class Math {
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
-        if (x > 0) {
-            return x;
-        } else {
+        if (x < 0) {
             return -x;
+        } else {
+            return x;
         }
     }
 }
