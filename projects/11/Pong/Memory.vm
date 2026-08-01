@@ -1,0 +1,349 @@
+function Memory.init 0
+push constant 0
+pop static 0
+push constant 2048
+pop static 1
+push constant 2048
+pop static 2
+push static 0
+push static 1
+add
+push constant 14336
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push static 0
+push static 1
+push constant 1
+add
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Memory.peek 0
+push argument 0
+push static 0
+add
+pop pointer 1
+push that 0
+return
+function Memory.poke 0
+push static 0
+push argument 0
+add
+push argument 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Memory.alloc 3
+push argument 0
+push constant 0
+gt
+not
+not
+if-goto L0
+push constant 0
+return
+goto L1
+label L0
+label L1
+push argument 0
+push constant 1
+add
+pop argument 0
+push static 1
+pop local 2
+push static 1
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 1
+label L2
+push local 1
+push argument 0
+push constant 2
+add
+lt
+push local 2
+push constant 0
+gt
+and
+not
+if-goto L3
+push local 2
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 2
+push local 2
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 1
+goto L2
+label L3
+push local 2
+push constant 0
+gt
+not
+if-goto L4
+push static 0
+push local 2
+add
+push local 2
+push static 0
+add
+pop pointer 1
+push that 0
+push argument 0
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 2
+push local 1
+add
+push argument 0
+sub
+pop local 0
+push static 0
+push local 0
+add
+push argument 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 0
+push constant 1
+add
+pop local 0
+push local 0
+return
+goto L5
+label L4
+push constant 1
+call Sys.error 1
+pop temp 0
+push constant 1
+neg
+return
+label L5
+function Memory.deAlloc 9
+push constant 0
+pop local 6
+push argument 0
+push constant 1
+sub
+pop local 4
+push local 4
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 5
+push static 1
+pop local 1
+push static 1
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 0
+push local 1
+push local 0
+add
+pop local 2
+push static 1
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 3
+label L6
+push local 1
+push constant 0
+gt
+push local 6
+push constant 0
+eq
+and
+not
+if-goto L7
+push local 2
+push local 4
+eq
+not
+if-goto L8
+push local 0
+push local 5
+add
+pop local 7
+push static 0
+push local 1
+add
+push local 7
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+pop local 6
+goto L9
+label L8
+push local 2
+push local 4
+lt
+push local 4
+push local 3
+lt
+push local 3
+push constant 0
+eq
+or
+and
+not
+if-goto L10
+push static 0
+push local 4
+push constant 1
+add
+add
+push local 1
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push static 0
+push local 1
+push constant 1
+add
+add
+push local 4
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 4
+pop local 6
+push local 5
+pop local 7
+goto L11
+label L10
+push local 1
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 1
+push local 1
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 0
+push local 1
+push local 0
+add
+pop local 2
+push local 1
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 3
+label L11
+label L9
+goto L6
+label L7
+push local 6
+push constant 0
+eq
+not
+if-goto L12
+push constant 1
+call Sys.error 1
+pop temp 0
+call Sys.halt 0
+pop temp 0
+push constant 0
+return
+goto L13
+label L12
+push local 6
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 8
+push local 6
+push local 7
+add
+push local 8
+eq
+not
+if-goto L14
+push static 0
+push local 6
+add
+push local 7
+push local 8
+push static 0
+add
+pop pointer 1
+push that 0
+add
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push static 0
+push local 6
+push constant 1
+add
+add
+push local 8
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+goto L15
+label L14
+label L15
+label L13
+push constant 0
+return

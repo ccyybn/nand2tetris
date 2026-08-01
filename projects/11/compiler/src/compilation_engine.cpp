@@ -87,6 +87,7 @@ const std::string_view CompilationEngine::processType() {
 void CompilationEngine::processSubroutineCall() {
     if (tokenizer_.peek(1).symbol == '(') {
         const auto& subroutine_name = processIdentifier();
+        // TODO: checking subroutine_name is a method name instead of a function name.
         vm_writer_.writePush(SEGMENT::POINTER, 0);
         processSymbol('(');
         size_t nargs = compileExpressionList();
@@ -234,7 +235,7 @@ void CompilationEngine::compileVarDec() {
 }
 
 void CompilationEngine::compileStatements() {
-    while (Tokenizer::all_statement_keywords.contains(tokenizer_.keyword())) {
+    while (tokenizer_.symbol() != '}') {
         switch (tokenizer_.keyword()) {
             case Keyword::K_LET:
                 compileLet();
@@ -252,6 +253,7 @@ void CompilationEngine::compileStatements() {
                 compileReturn();
                 break;
             default:
+                throw std::runtime_error(std::format("unexpected statement {}", tokenizer_.peek().lexeme));
                 break;
         }
     }
