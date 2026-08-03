@@ -102,14 +102,14 @@
 
 ## Core Control Signals & Algebraic Mapping Table
 
----
+
 
 ### 1. ALU Control Bus
 *(Directly driven by C-instruction bits c1~c6)*
 
 * **`[zx, nx, zy, ny, f, no]`** = `instruction[6..11]`
 
----
+
 
 ### 2. Registers & Memory Write Enable
 *(Controlled by instruction type `bit[15]` & destination bits `bit[3..5]`)*
@@ -121,7 +121,7 @@
 * **`writeM`** = `instruction[15] AND instruction[3]`  
   *(Enables RAM write if C-Instruction AND d3=1)*
 
----
+
 
 ### 3. Program Counter (PC) Jump Logic
 *(Determined by instruction `bit[15]`, jump bits `j1, j2, j3`, & ALU status flags `zr`, `ng`)*
@@ -144,3 +144,68 @@
   * `PC.inc` = `true`
   * `PC.reset` = `reset`
   * `PC.out` = `pc[15]` *(Next instruction address output)*
+
+ ## Function Call Process (`call Function nargs`)
+
+Suppose function **A** is currently calling function **B(arg0, arg1)** with `nargs = 2`:
+
+```text
+========================================================================================
+[Step 1: Before Call]                         [Step 2: Save Context (__VM_CALL__)]
+A prepares args, SP points to next slot       Push ReturnAddr & 4 pointers, reset ARG & LCL
+========================================================================================
+
+   RAM Address / Memory Layout                   RAM Address / Memory Layout
+  +------------------+                          +------------------+
+  |    ... (A's Stack)|                         |    ... (A's Stack)|
+  +------------------+                          +------------------+
+  |      arg0        | <-- ARG (old)            |      arg0        | <-- ARG (new = SP - 5 - 2)
+  +------------------+                          +------------------+
+  |      arg1        |                          |      arg1        |
+  +------------------+                          +------------------+
+  | (Next push slot) | <-- SP (old)             |   Return Addr    | (Saved return address)
+  +------------------+                          +------------------+
+                                                |     old LCL      | (Saved A's LCL)
+                                                +------------------+
+                                                |     old ARG      | (Saved A's ARG)
+                                                +------------------+
+                                                |     old THIS     | (Saved A's THIS)
+                                                +------------------+
+                                                |     old THAT     | (Saved A's THAT)
+                                                +------------------+
+                                                |  (B's local 0)   | <-- LCL (new = SP)
+                                                +------------------+     SP (new)
+                                                |       ...        |
+```
+
+## Function Return Process (`return`)
+
+When function **B** finishes execution and is ready to clean up the stack frame and return the result to function **A**:
+
+```text
+========================================================================================
+[Step 1: Before Return (B Ending)]            [Step 2: Restore Context (After VM_RETURN)]
+Return value is stored at top of B's stack    Frame destroyed, A restored with return value
+========================================================================================
+
+   RAM Address / Memory Layout                   RAM Address / Memory Layout
+  +------------------+                          +------------------+
+  |      arg0        | <-- ARG                  |   Return Value   | <-- ARG (Points to result)
+  +------------------+                          +------------------+
+  |      arg1        |                          |  (Garbage Data)  | <-- SP (Restored A's SP = ARG + 1)
+  +------------------+                          +------------------+
+  |   Return Addr    | <-- FRAME - 5            |  (Garbage Data)  | 
+  +------------------+                          +------------------+
+  |     old LCL      | <-- FRAME - 4            |      ...         | 
+  +------------------+                          
+  |     old ARG      | <-- FRAME - 3            *(LCL, ARG, THIS, THAT precisely restored)*
+  +------------------+                          *(Jumped back to Return Addr to resume A)*
+  |     old THIS     | <-- FRAME - 2            
+  +------------------+                          
+  |     old THAT     | <-- FRAME - 1            
+  +------------------+                          
+  |    local 0 ...   | <-- FRAME (original LCL) 
+  +------------------+                          
+  |   Return Value   | <-- SP (old)             
+  +------------------+
+```
