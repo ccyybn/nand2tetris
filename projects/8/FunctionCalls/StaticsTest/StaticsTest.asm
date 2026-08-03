@@ -2,59 +2,19 @@
 D=A
 @SP
 M=D
-// push returnAddress
-@bootstrap$ret.0
+@0
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@5
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Sys.init
+D=A
+@R14
+M=D
+@bootstrap$ret.0
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (bootstrap$ret.0)
 @END
@@ -74,8 +34,7 @@ M=D
 M=M+1
 // pop static 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @Class2.0
 M=D
@@ -92,8 +51,7 @@ M=D
 M=M+1
 // pop static 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @Class2.1
 M=D
@@ -106,59 +64,7 @@ M=D
 @SP
 M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 // function Class2.get 0
 (Class2.get)
@@ -180,69 +86,12 @@ M=D
 M=M+1
 // sub
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=M-D
-@SP
-M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 // function Sys.init 0
 (Sys.init)
@@ -263,65 +112,24 @@ M=D
 @SP
 M=M+1
 // call Class1.set 2
-// push returnAddress
-@Sys.init$ret.0
+@2
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@7
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Class1.set
+D=A
+@R14
+M=D
+@Sys.init$ret.0
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.init$ret.0)
 // pop temp 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R5
 M=D
@@ -342,178 +150,57 @@ M=D
 @SP
 M=M+1
 // call Class2.set 2
-// push returnAddress
-@Sys.init$ret.1
+@2
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@7
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Class2.set
+D=A
+@R14
+M=D
+@Sys.init$ret.1
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.init$ret.1)
 // pop temp 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R5
 M=D
 // call Class1.get 0
-// push returnAddress
-@Sys.init$ret.2
+@0
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@5
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Class1.get
+D=A
+@R14
+M=D
+@Sys.init$ret.2
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.init$ret.2)
 // call Class2.get 0
-// push returnAddress
-@Sys.init$ret.3
+@0
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@5
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Class2.get
+D=A
+@R14
+M=D
+@Sys.init$ret.3
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.init$ret.3)
 // label END
@@ -536,8 +223,7 @@ M=D
 M=M+1
 // pop static 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @Class1.0
 M=D
@@ -554,8 +240,7 @@ M=D
 M=M+1
 // pop static 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @Class1.1
 M=D
@@ -568,59 +253,7 @@ M=D
 @SP
 M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 // function Class1.get 0
 (Class1.get)
@@ -642,70 +275,162 @@ M=D
 M=M+1
 // sub
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=M-D
-@SP
-M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 (END)
 @END
+0;JMP
+(__VM_RETURN__)
+@LCL
+D=M
+@R13
+M=D
+@5
+A=D-A
+D=M
+@R14
+M=D
+@SP
+AM=M-1
+D=M
+@ARG
+A=M
+M=D
+@ARG
+D=M
+D=D+1
+@SP
+M=D
+@R13
+AM=M-1
+D=M
+@THAT
+M=D
+@R13
+AM=M-1
+D=M
+@THIS
+M=D
+@R13
+AM=M-1
+D=M
+@ARG
+M=D
+@R13
+AM=M-1
+D=M
+@LCL
+M=D
+@R14
+A=M
+0;JMP
+(__VM_CALL__)
+@R15
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@LCL
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@ARG
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@THIS
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@THAT
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@SP
+D=M
+@5
+D=D-A
+@R13
+D=D-M
+@ARG
+M=D
+@SP
+D=M
+@LCL
+M=D
+@R14
+A=M
+0;JMP
+(__VM_eq__)
+@__VM_eq_TRUE__
+D;JEQ
+@SP
+A=M
+A=A-1
+M=0
+@__VM_eq_END__
+0;JMP
+(__VM_eq_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_eq_END__)
+@R15
+A=M
+0;JMP
+(__VM_gt__)
+@__VM_gt_TRUE__
+D;JGT
+@SP
+A=M
+A=A-1
+M=0
+@__VM_gt_END__
+0;JMP
+(__VM_gt_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_gt_END__)
+@R15
+A=M
+0;JMP
+(__VM_lt__)
+@__VM_lt_TRUE__
+D;JLT
+@SP
+A=M
+A=A-1
+M=0
+@__VM_lt_END__
+0;JMP
+(__VM_lt_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_lt_END__)
+@R15
+A=M
 0;JMP

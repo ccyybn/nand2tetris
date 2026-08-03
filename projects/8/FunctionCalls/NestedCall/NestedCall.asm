@@ -2,59 +2,19 @@
 D=A
 @SP
 M=D
-// push returnAddress
-@bootstrap$ret.0
+@0
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@5
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Sys.init
+D=A
+@R14
+M=D
+@bootstrap$ret.0
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (bootstrap$ret.0)
 @END
@@ -71,8 +31,7 @@ M=D
 M=M+1
 // pop pointer 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THIS
 M=D
@@ -86,71 +45,29 @@ M=D
 M=M+1
 // pop pointer 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THAT
 M=D
 // call Sys.main 0
-// push returnAddress
-@Sys.init$ret.0
+@0
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@5
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Sys.main
+D=A
+@R14
+M=D
+@Sys.init$ret.0
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.init$ret.0)
 // pop temp 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R6
 M=D
@@ -161,29 +78,30 @@ M=D
 0;JMP
 // function Sys.main 5
 (Sys.main)
+D=0
 @SP
 A=M
-M=0
+M=D
 @SP
 M=M+1
 @SP
 A=M
-M=0
+M=D
 @SP
 M=M+1
 @SP
 A=M
-M=0
+M=D
 @SP
 M=M+1
 @SP
 A=M
-M=0
+M=D
 @SP
 M=M+1
 @SP
 A=M
-M=0
+M=D
 @SP
 M=M+1
 // push constant 4001
@@ -196,8 +114,7 @@ M=D
 M=M+1
 // pop pointer 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THIS
 M=D
@@ -211,8 +128,7 @@ M=D
 M=M+1
 // pop pointer 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THAT
 M=D
@@ -232,8 +148,7 @@ D=D+M
 @R13
 M=D
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R13
 A=M
@@ -254,8 +169,7 @@ D=D+M
 @R13
 M=D
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R13
 A=M
@@ -276,8 +190,7 @@ D=D+M
 @R13
 M=D
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R13
 A=M
@@ -291,65 +204,24 @@ M=D
 @SP
 M=M+1
 // call Sys.add12 1
-// push returnAddress
-@Sys.main$ret.0
+@1
 D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push LCL
-@LCL
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push ARG
-@ARG
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THIS
-@THIS
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// push THAT
-@THAT
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1
-// ARG = SP - 5 - nargs
-@6
-D=A
-@SP
-D=M-D
-@ARG
-M=D
-// LCL = SP
-@SP
-D=M
-@LCL
+@R13
 M=D
 @Sys.add12
+D=A
+@R14
+M=D
+@Sys.main$ret.0
+D=A
+@R15
+M=D
+@__VM_CALL__
 0;JMP
 (Sys.main$ret.0)
 // pop temp 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @R5
 M=D
@@ -410,102 +282,30 @@ M=D
 M=M+1
 // add
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=D+M
-@SP
-M=M+1
 // add
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=D+M
-@SP
-M=M+1
 // add
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=D+M
-@SP
-M=M+1
 // add
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=D+M
-@SP
-M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 // function Sys.add12 0
 (Sys.add12)
@@ -519,8 +319,7 @@ M=D
 M=M+1
 // pop pointer 0
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THIS
 M=D
@@ -534,8 +333,7 @@ M=D
 M=M+1
 // pop pointer 1
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
 @THAT
 M=D
@@ -560,70 +358,162 @@ M=D
 M=M+1
 // add
 @SP
-M=M-1
-A=M
+AM=M-1
 D=M
-@SP
-M=M-1
-A=M
+A=A-1
 M=D+M
-@SP
-M=M+1
 // return
-// Retrieve retAddr and put it into R13 before setting the return value; otherwise, the return value will overwrite it when nargs==0
-@5
-D=A
-@LCL
-A=M-D
-D=M
-@R13
-M=D
-// Get the return value at the top of the stack and put it at *ARG
-@SP
-A=M-1
-D=M
-@ARG
-A=M
-M=D
-// Restore SP, SP = ARG + 1
-@ARG
-D=M
-@SP
-M=D+1
-// Restore THAT
-@LCL
-A=M-1
-D=M
-@THAT
-M=D
-// Restore THIS
-@2
-D=A
-@LCL
-A=M-D
-D=M
-@THIS
-M=D
-// Restore ARG
-@3
-D=A
-@LCL
-A=M-D
-D=M
-@ARG
-M=D
-// Restore LCL
-@4
-D=A
-@LCL
-A=M-D
-D=M
-@LCL
-M=D
-// goto retAddr
-@R13
-A=M
+@__VM_RETURN__
 0;JMP
 (END)
 @END
+0;JMP
+(__VM_RETURN__)
+@LCL
+D=M
+@R13
+M=D
+@5
+A=D-A
+D=M
+@R14
+M=D
+@SP
+AM=M-1
+D=M
+@ARG
+A=M
+M=D
+@ARG
+D=M
+D=D+1
+@SP
+M=D
+@R13
+AM=M-1
+D=M
+@THAT
+M=D
+@R13
+AM=M-1
+D=M
+@THIS
+M=D
+@R13
+AM=M-1
+D=M
+@ARG
+M=D
+@R13
+AM=M-1
+D=M
+@LCL
+M=D
+@R14
+A=M
+0;JMP
+(__VM_CALL__)
+@R15
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@LCL
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@ARG
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@THIS
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@THAT
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@SP
+D=M
+@5
+D=D-A
+@R13
+D=D-M
+@ARG
+M=D
+@SP
+D=M
+@LCL
+M=D
+@R14
+A=M
+0;JMP
+(__VM_eq__)
+@__VM_eq_TRUE__
+D;JEQ
+@SP
+A=M
+A=A-1
+M=0
+@__VM_eq_END__
+0;JMP
+(__VM_eq_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_eq_END__)
+@R15
+A=M
+0;JMP
+(__VM_gt__)
+@__VM_gt_TRUE__
+D;JGT
+@SP
+A=M
+A=A-1
+M=0
+@__VM_gt_END__
+0;JMP
+(__VM_gt_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_gt_END__)
+@R15
+A=M
+0;JMP
+(__VM_lt__)
+@__VM_lt_TRUE__
+D;JLT
+@SP
+A=M
+A=A-1
+M=0
+@__VM_lt_END__
+0;JMP
+(__VM_lt_TRUE__)
+@SP
+A=M
+A=A-1
+M=-1
+(__VM_lt_END__)
+@R15
+A=M
 0;JMP
